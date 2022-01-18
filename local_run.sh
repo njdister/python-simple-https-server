@@ -8,7 +8,6 @@ export SERVER_PORT="$(get_parameter '/bb2/test/python-simple-https-server/server
 export SERVER_KEY="$(get_parameter '/bb2/test/python-simple-https-server/server-key')"
 export SERVER_CERT="$(get_parameter '/bb2/test/python-simple-https-server/server-cert')"
 
-#python3 main.py
 docker run --rm \
     -e SERVER_PORT \
     -e SERVER_KEY \
