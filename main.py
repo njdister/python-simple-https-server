@@ -14,6 +14,11 @@ class SimpleHTTPSRequestHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"{\"message\":\"server healthy\"}")
+        elif self.path == "/cpu":
+            expensive_value = str(sum([i for i in range(20000000)]))
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"{\"message\":\"%b\"}" % bytes(expensive_value, "utf-8"))
         else:
             self.send_response(404)
             self.end_headers()
