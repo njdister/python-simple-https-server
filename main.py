@@ -3,6 +3,8 @@ import os
 import ssl
 import sys
 
+server_cpu_endpoint_iterations = 0
+
 class SimpleHTTPSRequestHandler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
@@ -15,7 +17,7 @@ class SimpleHTTPSRequestHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"{\"message\":\"server healthy\"}")
         elif self.path == "/cpu":
-            expensive_value = str(sum([i for i in range(20000000)]))
+            expensive_value = str(sum([i for i in range(server_cpu_endpoint_iterations)]))
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"{\"message\":\"%b\"}" % bytes(expensive_value, "utf-8"))
@@ -37,6 +39,9 @@ def main():
             server_cert_file = open("/tmp/cert.pem", "w")
             server_cert_file.write(os.environ["SERVER_CERT"])
             server_cert_file.close()
+
+        global server_cpu_endpoint_iterations
+        server_cpu_endpoint_iterations = int(os.environ["SERVER_CPU_ENDPOINT_ITERATIONS"])
 
     except Exception as e:
         sys.exit(e)
