@@ -3,9 +3,14 @@ import os
 import ssl
 import sys
 
-server_cpu_endpoint_iterations = 0
+from functools import partial
 
 class SimpleHTTPSRequestHandler(http.server.BaseHTTPRequestHandler):
+
+    def __init__(self, server_cpu_endpoint_iterations, *args, **kwargs):
+        self.server_cpu_endpoint_iterations = server_cpu_endpoint_iterations
+
+        super().__init__(*args, **kwargs)
 
     def do_GET(self):
         if self.path == "/":
@@ -17,7 +22,7 @@ class SimpleHTTPSRequestHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"{\"message\":\"server healthy\"}")
         elif self.path == "/cpu":
-            expensive_value = str(sum([i for i in range(server_cpu_endpoint_iterations)]))
+            expensive_value = str(sum([i for i in range(self.server_cpu_endpoint_iterations)]))
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"{\"message\":\"%b\"}" % bytes(expensive_value, "utf-8"))
@@ -40,13 +45,15 @@ def main():
             server_cert_file.write(os.environ["SERVER_CERT"])
             server_cert_file.close()
 
-        global server_cpu_endpoint_iterations
         server_cpu_endpoint_iterations = int(os.environ["SERVER_CPU_ENDPOINT_ITERATIONS"])
 
     except Exception as e:
         sys.exit(e)
 
-    server = http.server.HTTPServer(("0.0.0.0", server_port), SimpleHTTPSRequestHandler)
+    # Solved composabililty issue with BaseHTTPRequestHandler via this solution: https://stackoverflow.com/a/52046062
+    req_handler = partial(SimpleHTTPSRequestHandler, server_cpu_endpoint_iterations)
+
+    server = http.server.HTTPServer(("0.0.0.0", server_port), req_handler)
 
     server.socket = ssl.wrap_socket(server.socket,
         keyfile="/tmp/key.pem",
