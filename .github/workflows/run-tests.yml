@@ -1,0 +1,20 @@
+name: Run tests for python-simple-https-server
+
+on:
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+    branches: [ $default-branch ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+      - name: Set up python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Run tests
+        run: python main_test.py
